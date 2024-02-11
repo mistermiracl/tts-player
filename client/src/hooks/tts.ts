@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { FetchType, usePost } from './fetch';
+import { ParseFormat } from './parser';
 
 const url = 'http://localhost:8080/tts';
 
-export function useTTS(ssml?: string): [string | undefined, boolean, Error | undefined] {
-  const [data, loading, poster, error] = usePost<string, Blob>(url, FetchType.BLOB);
+export function useTTS(format?: ParseFormat, ssml?: string): [string | undefined, boolean, Error | undefined] {
+  const ttsUrl = format ? `${url}?format=${format}` : undefined;
+  const [data, loading, poster, error] = usePost<string, Blob>(ttsUrl, FetchType.BLOB);
   const [blobUrl, setBlobUrl] = useState<string>();
 
   useEffect(() => {

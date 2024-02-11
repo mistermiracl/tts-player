@@ -10,7 +10,7 @@ type AudioParserProps = {
 export function AudioParser({ onParsed }: AudioParserProps) {
   const [selectedFormat, setSelectedFormat] = useState<ParseFormat>();
   const [ssml, parsing] = useParser(selectedFormat);
-  const [speechUrl, ttsLoading] = useTTS(ssml);
+  const [speechUrl, ttsLoading] = useTTS(selectedFormat, ssml);
   const formatSelect = useRef<HTMLSelectElement>(null);
 
   const handleParse = () => {

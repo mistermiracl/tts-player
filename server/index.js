@@ -2,7 +2,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const express = require('express');
 const tts = require('@google-cloud/text-to-speech');
-// const fs = require('fs/promises');
+const fs = require('fs/promises');
 const app = express();
 
 app.use(bodyParser.json());
@@ -52,6 +52,15 @@ app.get('/getFormat', (req, res) => {
 });
 
 app.post('/tts', async (req, res) => {
+  const format = req.query.format;
+  const filename = `./${format}.mp3`;
+  try {
+    await fs.access(filename);
+    console.log(`file ${filename} found, sending`);
+    return res.sendFile(filename, { root: __dirname });
+  } catch (err) {
+    console.log(`file ${filename} not found, synthesizing`);
+  }
   const ssml = req.body;
   const [speechResponse] = await ttsClient.synthesizeSpeech({
     input: {
@@ -65,8 +74,10 @@ app.post('/tts', async (req, res) => {
       audioEncoding: 'MP3'
     }
   });
+  const audio = speechResponse.audioContent;
+  await fs.writeFile(filename, audio, 'binary');
   res.header('Content-Type', 'audio/mpeg');
-  res.send(speechResponse.audioContent);
+  res.send(audio);
 });
 
 const port = 8080;
