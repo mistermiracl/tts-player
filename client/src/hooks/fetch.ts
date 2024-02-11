@@ -56,7 +56,7 @@ export function usePost<TBody extends string, TResBody>(url?: string, responseTy
   const [data, setData] = useState<TResBody>();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
-  const abortCtrl = useRef(new AbortController());
+  const abortCtrl = useRef<AbortController>();
 
   async function poster(reqBody: TBody) {
     setData(undefined);
@@ -68,8 +68,9 @@ export function usePost<TBody extends string, TResBody>(url?: string, responseTy
       const res = await fetch(url, {
         method: 'POST',
         body: reqBody,
-        // TODO: for some reason it abort this fetch when attached
-        // signal: abortCtrl.current.signal
+        // NOTE: still doesn't make sense since refs are supposed to keep that intiial value among re render and abort is never called
+        // must be react's use strict mode
+        signal: abortCtrl.current!.signal
       });
       let data: TResBody;
       switch (responseType) {
@@ -93,8 +94,9 @@ export function usePost<TBody extends string, TResBody>(url?: string, responseTy
   }
 
   useEffect(() => {
+    abortCtrl.current = new AbortController();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    return () => abortCtrl.current.abort();
+    return () => abortCtrl.current!.abort();
   }, []);
 
   return [data, loading, poster, error];
